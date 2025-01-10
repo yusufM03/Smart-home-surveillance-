@@ -1,72 +1,65 @@
 import cv2
-import pickle
 import numpy as np
+import pickle
 import os
+from utils import detect_faces, preprocess_face
 
-# Initialiser la capture vidéo
-video = cv2.VideoCapture(0)
+def add_face(name):
+    video = cv2.VideoCapture(0)
+    facedetect = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Chemin vers le fichier XML inclus dans OpenCV
-cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-facedetect = cv2.CascadeClassifier(cascade_path)
+    faces_data = []
+    i = 0
 
-# Liste pour stocker les visages et les étiquettes
-faces_data = []
-i = 0
+    while True:
+        ret, frame = video.read()
+        if not ret:
+            print("Error: Failed to capture frame.")
+            break
 
-# Demander le nom de l'utilisateur
-name = input("Enter Your Name: ")
+        faces = detect_faces(frame, facedetect)
 
-# Capturer des images et ajouter des visages
-while True:
-    ret, frame = video.read()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = facedetect.detectMultiScale(gray, 1.3, 5)
-    
-    for (x, y, w, h) in faces:
-        crop_img = frame[y:y+h, x:x+w, :]  # Conserver l'image en couleur
-        resized_img = cv2.resize(crop_img, (50, 50)).flatten()  # Redimensionner et aplatir l'image
-        if len(faces_data) < 100 and i % 10 == 0:  # Collecter 100 échantillons
-            faces_data.append(resized_img)
-        i += 1
-        cv2.putText(frame, str(len(faces_data)), (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 1)
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (50, 50, 255), 1)
-    
-    cv2.imshow("Frame", frame)
-    k = cv2.waitKey(1)
-    if k == ord('q') or len(faces_data) == 100:  # Quitter après avoir collecté 100 échantillons
-        break
+        for (x, y, w, h) in faces:
+            crop_img = frame[y:y+h, x:x+w, :]
+            resized_img = preprocess_face(crop_img)
+            if i % 10 == 0:
+                faces_data.append(resized_img)
+            i += 1
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (50, 50, 255), 1)
+            cv2.putText(frame, f"Capturing {name}", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (50, 50, 255), 1)
 
-video.release()
-cv2.destroyAllWindows()
+        cv2.imshow("Adding Face", frame)
+        if cv2.waitKey(1) == ord('q') or i == 100:
+            break
 
-# Convertir en tableau numpy
-faces_data = np.asarray(faces_data)
+    video.release()
+    cv2.destroyAllWindows()
 
-# Créer le dossier data/ s'il n'existe pas
-if not os.path.exists('data/'):
-    os.makedirs('data/')
+    # Charger les données existantes
+    if os.path.exists('data/faces_data.pkl'):
+        with open('data/faces_data.pkl', 'rb') as f:
+            existing_faces = pickle.load(f)
+        with open('data/names.pkl', 'rb') as f:
+            existing_names = pickle.load(f)
+    else:
+        existing_faces = []
+        existing_names = []
 
-# Charger ou créer les données existantes
-if 'names.pkl' not in os.listdir('data/'):
-    names = [name] * len(faces_data)  # Nombre d'étiquettes = nombre de visages
-else:
-    with open('data/names.pkl', 'rb') as f:
-        names = pickle.load(f)
-    names.extend([name] * len(faces_data))  # Ajouter les nouvelles étiquettes
+    # Ajouter les nouvelles données
+    existing_faces.extend(faces_data)
+    existing_names.extend([name] * len(faces_data))
 
-# Sauvegarder les étiquettes
-with open('data/names.pkl', 'wb') as f:
-    pickle.dump(names, f)
-
-if 'faces_data.pkl' not in os.listdir('data/'):
+    # Sauvegarder les données mises à jour
     with open('data/faces_data.pkl', 'wb') as f:
-        pickle.dump(faces_data, f)
-else:
-    with open('data/faces_data.pkl', 'rb') as f:
-        faces = pickle.load(f)
-    faces = np.append(faces, faces_data, axis=0)  # Ajouter les nouveaux visages
-    with open('data/faces_data.pkl', 'wb') as f:
-        pickle.dump(faces, f)
+        pickle.dump(np.array(existing_faces), f)
+    with open('data/names.pkl', 'wb') as f:
+        pickle.dump(existing_names, f)
 
-print(f"Added {len(faces_data)} faces for {name}.")
+    print(f"Added {len(faces_data)} faces for {name}.")
+
+    # Entraîner le modèle avec les nouvelles données
+    os.system("python scripts/train.py")
+
+if __name__ == "__main__":
+    name = input("Enter the name of the person: ")
+    add_face(name)
