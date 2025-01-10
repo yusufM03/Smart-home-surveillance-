@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Smart Home Surveillance System</title>
+	<meta name="keywords" content="flatui admin template">
+	<meta name="description" content="Free flatui admin template. Download free template flatui admin template at github">
+	<meta property="og:title" content="Sign In" />
+	<meta property="og:locale" content="en_IN" />
+	<meta name="description" content="Free flatui admin template. Developed by saravanajd" />
+	<meta property="og:description" content="Free flatui admin template. Developed by saravanajd" />
+	<meta property="og:site_name" content="Admin Template" />
+	<link rel="manifest" href="manifest.json" />
+	<!-- Boxicons -->
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<!-- My CSS -->
+	<link href="./css/Dashboard.css" rel="stylesheet">
+	<script src="js/jquery.min.js"></script>
+</head>
+<body>
+<!-- SIDEBAR -->
+<section id="sidebar">
+	<a href="dashboard.html" class="brand">
+		<span class="text">Smart Home Surveillance</span>
+	</a>
+	<ul class="side-menu top">
+		<li class="active">
+			<a href="dashboard.html">
+				<i class='bx bxs-dashboard'></i>
+				<span class="text">Dashboard</span>
+			</a>
+		</li>
+		<li>
+			<a href="maps.html">
+				<i class='bx bxs-map'></i>
+				<span class="text">Map</span>
+			</a>
+		</li>
+	</ul>
+	<ul class="side-menu">
+		<li>
+			<a href="index.html" class="logout">
+				<i class='bx bxs-log-out-circle'></i>
+				<span class="text">Logout</span>
+			</a>
+		</li>
+	</ul>
+</section>
+<!-- SIDEBAR -->
+
+<!-- CONTENT -->
+<section id="content">
+	<!-- NAVBAR -->
+
+	<!-- MAIN -->
+	<main>
+		<div class="head-title">
+			<div class="left">
+				<h1>Dashboard</h1>
+				<ul class="breadcrumb">
+					<li>
+						<a href="dashboard.html">Dashboard</a>
+					</li>
+					<li><i class='bx bx-chevron-right'></i></li>
+					<li>
+						<a class="active" href="#">Home</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="dashboard-container">
+			<!-- Home Status Card -->
+			<div class="card home-status">
+				<div class="card-header">
+					<span class="card-title">Home Status</span>
+				</div>
+				<div class="card-content">
+					<div class="status-text">Empty</div>
+					<p class="subtitle">LBS System Active</p>
+				</div>
+			</div>
+			<!-- End of Home Status Card -->
+
+			<!-- Logs Section -->
+			<div class="logs-section">
+				<div class="head">
+					<h3>Detection Logs</h3>
+					<button id="refreshButton" class="btn">Refresh Logs</button>
+				</div>
+				<table>
+					<thead>
+					<tr>
+						<th>ID</th>
+						<th>Timestamp</th>
+						<th>Detected Class</th>
+					</tr>
+					</thead>
+					<tbody id="logTable">
+					<!-- Logs will be populated here dynamically -->
+					</tbody>
+				</table>
+			</div>
+			<!-- End of Logs Section -->
+		</div>
+	</main>
+	<!-- MAIN -->
+</section>
+<!-- CONTENT -->
+
+<script>
+	// Function to fetch logs from the API
+	async function fetchLogs() {
+		// Retrieve the access token from localStorage
+		var accessToken = localStorage.getItem("accesstoken"); // Corrected the variable name
+
+		console.log(accessToken);
+
+		try {
+			const response = await fetch('http://localhost:8080/api/logs', {
+				method: 'GET',
+				headers: {
+					'Accept': 'application/json',
+					'Authorization': `Bearer ${accessToken}`
+				}
+			});
+
+			// Check if the response is successful
+			if (!response.ok) {
+				console.error("Failed to fetch logs", response.statusText);
+				return;
+			}
+
+			const logs = await response.json();
+			console.log("logs")
+			console.log(logs)
+			const logTable = document.getElementById('logTable');
+			logTable.innerHTML = ''; // Clear any existing logs
+
+			// Populate the log table
+			logs.forEach(log => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+                <td>${log.id}</td>
+                <td>${log.timestamp}</td>
+                <td>${log.detectedClass}</td>
+            `;
+				logTable.appendChild(row);
+			});
+		} catch (error) {
+			console.error('Error fetching logs:', error);
+			document.getElementById('logTable').innerHTML = "<tr><td colspan='3'>Error loading logs.</td></tr>";
+		}
+	}
+
+	// Refresh logs when the button is clicked
+	document.getElementById('refreshButton').addEventListener('click', fetchLogs);
+
+	// Initial fetch of logs
+	fetchLogs();
+</script>
+
+<script src="./js/script.js"></script>
+
+</body>
+</html>
