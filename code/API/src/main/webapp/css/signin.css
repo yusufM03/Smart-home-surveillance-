@@ -1,0 +1,115 @@
+/* signin.css */
+
+/* General Reset */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, #84fab0, #8fd3f4);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Background shapes */
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+.shape {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape:nth-child(1) {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.shape:nth-child(2) {
+    width: 300px;
+    height: 300px;
+    bottom: 15%;
+    right: 10%;
+    animation-delay: 2s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-30px);
+    }
+}
+
+/* Form Styling */
+.form-signin {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.btn {
+    background: #84fab0;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.btn:hover {
+    background: #8fd3f4;
+}
+
+a {
+    display: block;
+    margin-top: 15px;
+    color: #84fab0;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
